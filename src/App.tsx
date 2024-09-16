@@ -7,8 +7,11 @@ const App = () => {
   return (
     <div className=''>
       <Routes>
-        <Route path='/' Component={HomePage} />
+        
+
+          <Route path='/' Component={HomePage} />
         <Route path='/chat' Component={ChatPage} />
+        
       </Routes>
     </div>
   )

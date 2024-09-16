@@ -8,7 +8,7 @@ interface UserInput {
   name: string;
   email: string;
   password: string;
-  pic: string | null; // Updated to string for the URL
+  pic: string | null; 
 }
 
 const Signup = () => {
@@ -30,13 +30,17 @@ const Signup = () => {
       const data = new FormData();
       data.append("file", file);
       data.append("upload_preset", "Belegram");
-      data.append("cloud_name", "bikalpacloud");
 
       fetch(`https://api.cloudinary.com/v1_1/bikalpacloud/image/upload`, {
         method: "post",
         body: data,
       })
-        .then((res) => res.json())
+        .then((res) => {
+             if (!res.ok) {
+               throw new Error(`Error: ${res.statusText}`);
+             }
+          return res.json();
+        })
         .then((data) => {
           if (data && data.url) {
             setInputUser((prev) => ({
@@ -72,7 +76,11 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (
+ 
+
+    try {
+      const { data } = await axios.post(`/api/user/register`, inputUser);
+         if (
       !inputUser.name ||
       !inputUser.email ||
       !inputUser.password ||
@@ -84,14 +92,20 @@ const Signup = () => {
     if (inputUser.password !== conPassword) {
       return toast.error("Passwords do not match");
     }
-
-    try {
-      const { data } = await axios.post(`/user/register`, inputUser);
-      if (data) {
-        toast.success("Registration successful");
-        localStorage.setItem("userInfo", JSON.stringify(data));
-        navigate("/chats");
-      }
+    if (!inputUser.pic) {
+      setInputUser((prev) => ({
+        ...prev,
+        pic: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0mpEAFXv-iIa50q5rA2L6nnHGy_akXDFyQQ&s',
+      }));
+    }
+      if ((data === "User Already Exists")) return toast.error('Email already exists')
+      
+        toast.success("creating account...");
+      setTimeout(() => {
+          localStorage.setItem("userInfo", JSON.stringify(data));
+          navigate("/chat");
+      },5555)
+      
     } catch (error) {
       console.error(error);
       toast.error("Registration failed");
@@ -120,6 +134,7 @@ const Signup = () => {
             className="border-2 h-9 pl-3"
             placeholder="Enter Your Email"
             name="email"
+            pattern="[^ @]*@[^ @]*"
           />
           <input
             type="password"
